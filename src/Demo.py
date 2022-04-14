@@ -32,7 +32,7 @@ class Demo(QWidget):
         self.button.released.connect(self.change_text)
 
         # 自定义信号
-        self.my_signal.connect()
+        self.my_signal.connect(self.change_text)
 
     def change_text(self):
         """
