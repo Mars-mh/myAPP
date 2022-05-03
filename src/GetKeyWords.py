@@ -2,9 +2,17 @@
 使用TF_IDF, jieba-TF_IDF, TextRank 获取关键词
 """
 import os
+import sys
 import math
 import pandas as pd
 import jieba.analyse
+
+# 防止打包出错，指定加载路径
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    print('running in a PyInstaller bundle')
+else:
+    print('running in a normal Python process')
+jieba.set_dictionary("src/dict.txt")
 
 
 class GetKeyWords:

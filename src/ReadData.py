@@ -2,10 +2,14 @@
 读取项目文本数据
 """
 import re
-import jieba
 import os
 import pandas as pd
 from collections import Counter
+
+
+import jieba
+# 防止打包出错，指定加载路径
+jieba.set_dictionary("src/dict.txt")
 
 
 class ReadData:
