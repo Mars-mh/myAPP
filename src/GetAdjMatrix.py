@@ -59,6 +59,6 @@ class GetAdjMatrix:
         count_frame = pd.DataFrame(res_count, index=name_file, columns=name_file)
         content_frame = pd.DataFrame(res_content, index=name_file, columns=name_file)
 
-        content_frame.to_csv(self.res_path_root + '文章间关键词共现内容.csv', index=True, header=True, encoding='utf-8')
-        count_frame.to_csv(self.res_path_root + '文章间关键词共现数量.csv', index=True, header=True, encoding='utf-8')
+        content_frame.to_csv(self.res_path_root + '文章间关键词共现内容.csv', index=True, header=True, encoding='gb2312')
+        count_frame.to_csv(self.res_path_root + '文章间关键词共现数量.csv', index=True, header=True, encoding='gb2312')
 

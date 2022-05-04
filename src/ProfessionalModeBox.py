@@ -1,11 +1,23 @@
 import time
 from PyQt5.QtWidgets import QWidget, QLabel, QPushButton, QGridLayout, QFileDialog, QTextBrowser, QCheckBox
+from PyQt5.QtGui import QIcon
 
 from ReadWords import ReadWords
 from ReadObjList import ReadObjList
 from ReadData import ReadData
 from GetKeyWords import GetKeyWords
 from GetAdjMatrix import GetAdjMatrix
+
+import os
+import sys
+
+# 防止打包出错，指定加载路径
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    the_path = sys._MEIPASS + '/'
+else:
+    the_path = os.path.dirname(__file__) + '/'
+
+the_path = the_path.replace('\\', '/')
 
 
 class ProfessionalMode(QWidget):
@@ -28,18 +40,23 @@ class ProfessionalMode(QWidget):
         # 设置参数区域
         self._cut_all = False
         self._hmm = False
+        self._word_style_red = "<b><font color='red'>"
+        self._word_style_green = "<b><font color='green'>"
 
         # 设置结果区域
         self._fre_dir = None
 
         self._time = lambda x: x.strftime("%Y-%m-%d %H:%M:%S", x.localtime())
 
-        # 固定页面大小
+        # 设置页面标题，固定页面大小
+        self.setWindowTitle('专业模式')
+        self.setWindowIcon(QIcon(the_path + 'my_icon/mc_icon.ico'))
         self.resize(800, 600)
+        self.setFixedSize(800, 600)
 
         # 初始化日志打印text browser
         self.my_log = QTextBrowser(self)
-        self.my_log.setStyleSheet("border-image:url(./src/my_icon/mc_p.png)")
+        self.my_log.setStyleSheet(f"border-image:url({the_path}my_icon/mc_p.png)")
 
         # 初始化功能按钮
         self.stopwords_button = QPushButton('更新停用词', self)
@@ -117,7 +134,7 @@ class ProfessionalMode(QWidget):
         self.setLayout(self.grid_layout)
 
         # 写日志
-        self.my_log.append(f'{self._time(time)}: 初始化界面完成 ...')
+        self.my_log.append(f'<b>{self._time(time)}: 初始化界面完成 ...')
 
     def get_words_path(self, target_type):
         """
@@ -139,9 +156,9 @@ class ProfessionalMode(QWidget):
             elif target_type == 2:
                 self.my_dict_label.setText(file_name)
 
-            self.my_log.append(f'{self._time(time)}: 读取停用词位置完成 ...')
+            self.my_log.append(f'<b>{self._time(time)}: 读取停用词位置完成 ...')
         else:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: {type_name}读取失败，未选择文件  ！！！</font>")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: {type_name}读取失败，未选择文件  ！！！")
             return
 
         try:
@@ -150,21 +167,21 @@ class ProfessionalMode(QWidget):
             elif target_type == 2:
                 self._my_dict_list = ReadWords(self.my_dict_label.text()).get_words_list()
 
-            self.my_log.append(f'{self._time(time)}: {type_name}解析完成 ...')
+            self.my_log.append(f'<b>{self._time(time)}: {type_name}解析完成 ...')
 
         except UnicodeDecodeError:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: {type_name}读取失败，请检查文本编码是否为UTF-8  ！！！</font>")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: {type_name}读取失败，请检查文本编码是否为UTF-8  ！！！")
         except FileNotFoundError:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: {type_name}读取失败，未选择文件  ！！！</font>")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: {type_name}读取失败，未选择文件  ！！！")
 
     def get_obj_path(self):
         dir_name = QFileDialog.getExistingDirectory(self, "选取文件夹", './')
 
         if dir_name:
             self.obj_label.setText(dir_name)
-            self.my_log.append(f'{self._time(time)}: 读取待分析文件夹完成...')
+            self.my_log.append(f'<b>{self._time(time)}: 读取待分析文件夹完成...')
         else:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: {dir_name}读取失败，未选择文件夹  ！！！</font>")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: {dir_name}读取失败，未选择文件夹  ！！！")
             return
 
         # 开始读取项目列表
@@ -190,11 +207,11 @@ class ProfessionalMode(QWidget):
 
         # 若为空时点击打印，则输出警告
         if not target:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: {type_name}为空，无法打印 ！！！")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: {type_name}为空，无法打印 ！！！")
             return
 
-        self.my_log.append(f'{self._time(time)}: 打印最近添加的前100个{type_name}：')
-        self.my_log.append('-' * 80)
+        self.my_log.append(f'<b>{self._time(time)}: 打印最近添加的前100个{type_name}：')
+        self.my_log.append('<b>' + '-' * 65)
 
         # 只打印前100，若小于则全部输出
         n = 100 if len(target) >= 100 else len(target)
@@ -202,7 +219,7 @@ class ProfessionalMode(QWidget):
 
         for i in range(1, n+1):
             tmp.append('<td>' + str(target[-i]) + '</td><td></td>')
-            if i % 5 == 0:
+            if i % 8 == 0:
                 tmp.append('</tr><tr>')
 
         tmp.append('</tr></table>')
@@ -211,11 +228,11 @@ class ProfessionalMode(QWidget):
 
     def print_doc_list(self):
         if not self._doc_list:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: 项目文件夹为空，无法打印 ！！！")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: 项目文件夹为空，无法打印 ！！！")
             return
 
-        self.my_log.append(f'{self._time(time)}: 打印最近添加的项目文件名：')
-        self.my_log.append('-'*80)
+        self.my_log.append(f'<b>{self._time(time)}: 打印最近添加的项目文件名：')
+        self.my_log.append('<b>' + '-' * 65)
 
         for item in self._doc_list:
             self.my_log.append(item)
@@ -229,29 +246,29 @@ class ProfessionalMode(QWidget):
         if box_type == 1:
             if self.hmm_check.isChecked():
                 self._hmm = True
-                self.my_log.append(f'{self._time(time)}: 选择使用 <HMM> 模型 ...')
+                self.my_log.append(f'<b>{self._time(time)}: 选择使用 <HMM> 模型 ...')
             else:
                 self._hmm = False
-                self.my_log.append(f'{self._time(time)}: 不选择使用 <HMM> 模型 ...')
+                self.my_log.append(f'<b>{self._time(time)}: 不选择使用 <HMM> 模型 ...')
         elif box_type == 2:
             if self.cut_all_check.isChecked():
                 self._cut_all = True
-                self.my_log.append(f'{self._time(time)}: 选择使用 <全模式> ...')
+                self.my_log.append(f'<b>{self._time(time)}: 选择使用 <全模式> ...')
             else:
                 self._cut_all = False
-                self.my_log.append(f'{self._time(time)}: 选择使用 <精确模式> ...')
+                self.my_log.append(f'<b>{self._time(time)}: 选择使用 <精确模式> ...')
         else:
             pass
 
     def get_words_cut(self):
         if not self._stop_list or not self._my_dict_list or not self._doc_list:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: 请完成基本配置，再进行分词 ！！！</font>")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: 请完成基本配置，再进行分词 ！！！")
             return
 
-        self.my_log.append("<font color='green'>" + "-" * 80 + "</font>")
-        self.my_log.append(f"<font color='green'>{self._time(time)}:" + "开始分词..." + "</font>")
-        self.my_log.append("<font color='green'>" + f"----分词模型配置为: 使用HMM({self._hmm}) and 使用全模式({self._cut_all})" + "</font>")
-        self.my_log.append("<font color='green'>" + f"----项目文档个数为: {len(self._doc_list)}" + "</font>")
+        self.my_log.append("<b>" + "-" * 65 + "</font>")
+        self.my_log.append(f"{self._word_style_green}{self._time(time)}:" + "开始分词...")
+        self.my_log.append(f"{self._word_style_green}----分词模型配置为: 使用HMM({self._hmm}) and 使用全模式({self._cut_all})")
+        self.my_log.append(f"{self._word_style_green}----项目文档个数为: {len(self._doc_list)}" + "</font>")
 
         obj_path = self.obj_label.text() + '/'
 
@@ -259,38 +276,44 @@ class ProfessionalMode(QWidget):
 
         # 遍历存入词频结果
         for item in self._doc_list:
-            read_data.my_cut(obj_path, item)
+
+            try:
+                read_data.my_cut(obj_path, item)
+            except UnicodeDecodeError:
+                self.my_log.append("<b>" + "-" * 65 + "</font>")
+                self.my_log.append(f"{self._word_style_red}{self._time(time)}:" + f"项目文件夹中'{item}'编码错误...")
+                return
 
         self._fre_dir = obj_path + '词频结果/'
-        self.my_log.append(f"<font color='green'>{self._time(time)}: 分词结束... </font>")
-        self.my_log.append(f"<font color='green'>----结果保存在文件夹: {self._fre_dir} </font>")
+        self.my_log.append(f"{self._word_style_green}{self._time(time)}: 分词结束...")
+        self.my_log.append(f"{self._word_style_green}----结果保存在文件夹: {self._fre_dir}")
 
     def get_key_words(self):
         if not self._fre_dir:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: 请完成分词操作，再进行关键词抽取 ！！！</font>")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: 请完成分词操作，再进行关键词抽取 ！！！")
             return
 
-        self.my_log.append("<font color='green'>" + "-" * 80 + "</font>")
-        self.my_log.append(f"<font color='green'>{self._time(time)}: 开始提取关键词(TF_IDF)... </font>")
-        self.my_log.append(f"<font color='green'>{self._time(time)}: 开始提取关键词(JIEBA_TF_IDF)... </font>")
-        self.my_log.append(f"<font color='green'>{self._time(time)}: 开始提取关键词(JIEBA_TEXT_RANK)... </font>")
+        self.my_log.append("<b>" + "-" * 65 + "</font>")
+        self.my_log.append(f"{self._word_style_green}{self._time(time)}: 开始提取关键词(TF_IDF)...")
+        self.my_log.append(f"{self._word_style_green}{self._time(time)}: 开始提取关键词(JIEBA_TF_IDF)...")
+        self.my_log.append(f"{self._word_style_green}{self._time(time)}: 开始提取关键词(JIEBA_TEXT_RANK)...")
 
         key_words = GetKeyWords(self._fre_dir)
         key_words.get_tf_idf()
-        self.my_log.append(f"<font color='green'>{self._time(time)}: 关键词抽取结束... </font>")
-        self.my_log.append(f"<font color='green'>----结果保存在文件夹: {self._fre_dir.replace('词频结果/', '') + 'TFIDF统计结果/'} </font>")
+        self.my_log.append(f"{self._word_style_green}{self._time(time)}: 关键词抽取结束...")
+        self.my_log.append(f"{self._word_style_green}----结果保存在文件夹: {self._fre_dir.replace('词频结果/', '') + 'TFIDF统计结果/'}")
 
     def get_adj_matrix(self):
         if not self._fre_dir:
-            self.my_log.append(f"<font color='red'>{self._time(time)}: 请完成分词操作，再进行关键词抽取 / 共现结果统计 ！！！</font>")
+            self.my_log.append(f"{self._word_style_red}{self._time(time)}: 请完成分词及关键词抽取 ！！！")
             return
 
         adj_matrix = GetAdjMatrix(self._fre_dir)
-        self.my_log.append("<font color='green'>" + "-" * 80 + "</font>")
-        self.my_log.append(f"<font color='green'>{self._time(time)}: 开始统计文章间关键词共现结果... </font>")
+        self.my_log.append("<b>" + "-" * 65 + "</font>")
+        self.my_log.append(f"{self._word_style_green}{self._time(time)}: 开始统计文章间关键词共现结果...")
         adj_matrix.get_adj_matrix()
-        self.my_log.append(f"<font color='green'>{self._time(time)}: 文章间关键词共现结果统计结束... </font>")
-        self.my_log.append(f"<font color='green'>----结果保存在文件夹: {self._fre_dir.replace('词频结果/', '') + '项目共现词统计结果/'} </font>")
+        self.my_log.append(f"{self._word_style_green}{self._time(time)}: 文章间关键词共现结果统计结束...")
+        self.my_log.append(f"{self._word_style_green}----结果保存在文件夹: {self._fre_dir.replace('词频结果/', '') + '项目共现词统计结果/'}")
 
     def clear_log(self):
         if self.my_log.toPlainText():
@@ -314,8 +337,8 @@ class ProfessionalMode(QWidget):
         self._fre_dir = None
 
         # 初始化显示label
-        self.stopwords_label = QLabel('停用词未更新 (*.txt with utf-8) ...', self)
-        self.my_dict_label = QLabel('用户词典未更新 (*.txt with utf-8) ...', self)
-        self.obj_label = QLabel('项目文件夹为空 (contain *.txt with utf-8) ...', self)
+        self.stopwords_label.setText('停用词未更新 (*.txt with utf-8) ...')
+        self.my_dict_label.setText('用户词典未更新 (*.txt with utf-8) ...')
+        self.obj_label.setText('项目文件夹为空 (contain *.txt with utf-8) ...')
 
 

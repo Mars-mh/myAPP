@@ -2,6 +2,8 @@
 简单模式，完成单个文章的分词
 并将词频结果输出
 """
+import sys
+import os
 import jieba
 import jieba.analyse
 import re
@@ -9,9 +11,16 @@ import pandas as pd
 import time
 from collections import Counter
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QTextBrowser, QTextEdit, QHBoxLayout, QFileDialog, QGraphicsOpacityEffect
-
+from PyQt5.QtWidgets import QWidget, QPushButton, QGridLayout, QTextBrowser, QTextEdit, QHBoxLayout, QFileDialog
 from CommonData import CommonData
+
+# 防止打包出错，指定加载路径
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    the_path = sys._MEIPASS + '/'
+else:
+    the_path = os.path.dirname(__file__) + '/'
+
+the_path = the_path.replace('\\', '/')
 
 
 def count_words_fun(text_input, my_stop_words):
@@ -45,7 +54,10 @@ class SimpleMode(QWidget):
         self.stop_words = CommonData().stop_words
         self._time = lambda x: x.strftime("%Y-%m-%d %H:%M:%S", x.localtime())
 
-        # 固定页面大小
+        # 设置页面标题，固定页面大小
+        self.setWindowTitle('简单模式')
+        self.setWindowIcon(QIcon(the_path + 'my_icon/mc_icon.ico'))
+        self.resize(800, 600)
         self.resize(800, 600)
 
         # 初始化功能按钮
@@ -58,9 +70,9 @@ class SimpleMode(QWidget):
         self.save_button.setEnabled(False)
 
         # 美化
-        self.clear_button.setIcon(QIcon('./src/my_icon/clear.ico'))
-        self.go_button.setIcon(QIcon('./src//my_icon/go.ico'))
-        self.save_button.setIcon(QIcon('./src/my_icon/save.ico'))
+        self.clear_button.setIcon(QIcon(the_path + 'my_icon/clear.ico'))
+        self.go_button.setIcon(QIcon(the_path + 'my_icon/go.ico'))
+        self.save_button.setIcon(QIcon(the_path + 'my_icon/save.ico'))
 
         # 初始化输入输出文本框
         self.input_text_box = QTextEdit()
@@ -69,8 +81,8 @@ class SimpleMode(QWidget):
         self.output_text_box = QTextBrowser()
         self.output_text_box.setPlaceholderText('结果输出窗口: \n 1-在左侧输入文本\n 2-选择开始进行分词\n 3-分词结果将在本框内显示\n 4-选择存储保存分词结果')
 
-        self.input_text_box.setStyleSheet("border-image:url(./src/my_icon/mc_bg_l.png)")
-        self.output_text_box.setStyleSheet("border-image:url(./src/my_icon/mc_bg_r.png)")
+        self.input_text_box.setStyleSheet(f"border-image:url({the_path}my_icon/mc_bg_l.png)")
+        self.output_text_box.setStyleSheet(f"border-image:url({the_path}my_icon/mc_bg_r.png)")
 
         self.input_text_box.textChanged.connect(self.check_input_fun)
 
@@ -140,7 +152,7 @@ class SimpleMode(QWidget):
 
         # 若输入为空
         if not item:
-            self.output_text_box.append(f"<font color='red'>{self._time(time)}:\t未输入有效中文文本，请检查输入!</font>")
+            self.output_text_box.append(f"<b><font color='red'>{self._time(time)}:\t未输入有效中文!")
             return
 
         else:
@@ -185,14 +197,14 @@ class SimpleMode(QWidget):
             self._output = res
 
             # 在输出中打印
-            self.output_text_box.append(f"<font color='green'>{self._time(time)}:\t 分词结果如下:</font>")
-            self.output_text_box.append('-' * 60)
-            self.output_text_box.append("{0:20}\t{1:4}\t{2:4}\t{3:4}".format('关键词', 'TF-IDF', 'TextRank', '词频'))
-            self.output_text_box.append('-'*60)
+            self.output_text_box.append(f"<b><font color='green'>{self._time(time)}: 分词结果如下:")
+            self.output_text_box.append('<b>' + '-'*39)
+            self.output_text_box.append("{0:14}\t{1:3}\t{2:3}\t{3:3}".format('关键词', 'TF-IDF', 'TextRank', '词频'))
+            self.output_text_box.append('<b>' + '-'*39)
             for k, v in self._output.items():
-                my_str = "{0:20}\t{1:4}\t{2:4}\t{3:4}".format(k, v[0], v[1], v[2])
+                my_str = "{0:14}\t{1:3}\t{2:3}\t{3:3}".format(k, v[0], v[1], v[2])
                 self.output_text_box.append(my_str)
-            self.output_text_box.append('-' * 60)
+            self.output_text_box.append('<b>' + '-'*39)
 
     def save_fun(self):
         """
@@ -201,14 +213,14 @@ class SimpleMode(QWidget):
         """
         # 先判断是否完成分词
         if not self._output:
-            self.output_text_box.append(f"<font color='red'>{self._time(time)}:\t未进行中文文本分词，请先分词!</font>")
+            self.output_text_box.append(f"<b><font color='red'>{self._time(time)}:\t未进行中文文本分词，请先分词!")
             return
         else:
             dir_name = QFileDialog.getExistingDirectory(self, "选取文件夹", './')
 
             # 后判断是否获取到有效存储位置
             if not dir_name:
-                self.output_text_box.append(f"<font color='red'>{self._time(time)}:\t未选择保存文件的文件夹，保存失败!</font>")
+                self.output_text_box.append(f"<b><font color='red'>{self._time(time)}:\t未选择文件夹，保存失败!")
                 return
 
             tmp_res = []
@@ -219,8 +231,8 @@ class SimpleMode(QWidget):
             data_frame = pd.DataFrame(tmp_res, columns=['关键词', 'TF-IDF', 'TEXTRANK', '词频'])
             frame_sort_values = data_frame.sort_values(by='TF-IDF', ascending=False)
 
-            full_file_name = dir_name + f'/简单模式分词结果-{self._time(time)}.csv'
-            frame_sort_values.to_csv(full_file_name, index=False)
+            full_file_name = dir_name + f'/简单模式分词结果-{self._time(time)}.csv'.replace(' ', '-').replace(':', '-')
+            frame_sort_values.to_csv(full_file_name, index=False, encoding='gb2312')
 
-            self.output_text_box.append(f"<font color='green'>{self._time(time)}:\t 文件保存在:</font>")
-            self.output_text_box.append(f"<font color='green'>{full_file_name}</font>")
+            self.output_text_box.append(f"<b><font color='green'>{self._time(time)}:\t 文件保存在:")
+            self.output_text_box.append(f"<b><font color='green'>{full_file_name}")

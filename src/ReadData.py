@@ -3,13 +3,16 @@
 """
 import re
 import os
+import sys
 import pandas as pd
+import jieba
 from collections import Counter
 
-
-import jieba
 # 防止打包出错，指定加载路径
-jieba.set_dictionary("src/dict.txt")
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    the_path = sys._MEIPASS + '\\'
+else:
+    the_path = os.path.dirname(__file__) + '\\'
 
 
 class ReadData:
@@ -39,6 +42,7 @@ class ReadData:
         """
 
         file = open(target_path + file_name, "r", encoding='utf-8')
+
         content = Counter()
 
         for item in file:
@@ -53,5 +57,5 @@ class ReadData:
 
         frame = pd.DataFrame(content.items())
         sort_values = frame.sort_values(by=1, ascending=False)
-        sort_values.to_csv(self.res_path + file_name.replace(".txt", '.csv'), header=None, index=None, encoding='utf-8')
+        sort_values.to_csv(self.res_path + file_name.replace(".txt", '.csv'), header=None, index=None, encoding='gb2312')
 

@@ -9,10 +9,9 @@ import jieba.analyse
 
 # 防止打包出错，指定加载路径
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-    print('running in a PyInstaller bundle')
+    the_path = sys._MEIPASS + '\\'
 else:
-    print('running in a normal Python process')
-jieba.set_dictionary("src/dict.txt")
+    the_path = os.path.dirname(__file__) + '\\'
 
 
 class GetKeyWords:
@@ -90,7 +89,7 @@ class GetKeyWords:
             res_root_name.append(file_name)
 
         frame = pd.DataFrame(res_root, index=res_root_name).T
-        frame.to_csv(self.res_path_root + '默认TF_IDF关键词结果.csv', index=False, encoding='utf-8')
+        frame.to_csv(self.res_path_root + '默认TF_IDF关键词结果.csv', index=False, encoding='gb2312')
 
         # 使用结巴计算相关结果
         res_jieba = []
@@ -112,6 +111,5 @@ class GetKeyWords:
         frame_text_rank = pd.DataFrame(res_text_rank, index=res_name).T
 
         # 文件保存
-        frame_jieba.to_csv(self.res_path_root + 'JIEBA_TF_IDF关键词结果.csv', index=False, encoding='utf-8')
-        frame_text_rank.to_csv(self.res_path_root + 'JIEBA_TEXT_RANK关键词结果.csv', index=False, encoding='utf-8')
-
+        frame_jieba.to_csv(self.res_path_root + 'JIEBA_TF_IDF关键词结果.csv', index=False, encoding='gb2312')
+        frame_text_rank.to_csv(self.res_path_root + 'JIEBA_TEXT_RANK关键词结果.csv', index=False, encoding='gb2312')
