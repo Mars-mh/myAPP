@@ -50,7 +50,7 @@ class GetKeyWords:
 
         # 读取文件
         for item in self.doc_list:
-            f = open(self.doc_path + item, 'r')
+            f = open(self.doc_path + item, 'r', encoding='gb2312')
 
             word_pair = []
 
